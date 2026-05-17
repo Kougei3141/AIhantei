@@ -70,45 +70,34 @@ def structure_score(img1, img2):
 
 
 # =========================
-# 最終スコア（ゲーム調整）
+# 最終スコア（なめらか版）
 # =========================
 def final_score(c, col, struct, difficulty):
-
+    # ベーススコア（連続値）
     base = (0.75 * c + 0.15 * col + 0.10 * struct) * 100
 
-    score = base + 5  # 気持ちよくする補正
+    # 各指標が低いほど連続的にペナルティが増える
+    penalty = 0
 
-    # 最低保証（意味が似てるとき）
-    if c >= 0.85:
-        score = max(score, 50)
-    elif c >= 0.80:
-        score = max(score, 45)
-    elif c >= 0.75:
-        score = max(score, 40)
+    # 色ズレペナルティ（閾値0.15以下で比例的に増加、最大4.5点）
+    if col < 0.15:
+        penalty += (0.15 - col) * 30
 
-    # 意味だけ似てて他が違う場合
-    if c >= 0.80 and col < 0.15 and struct < 0.10:
-        score -= 10
+    # 構図ズレペナルティ（閾値0.15以下で比例的に増加、最大3.0点）
+    if struct < 0.15:
+        penalty += (0.15 - struct) * 20
 
-    # 色ズレ
-    if col < 0.08:
-        score -= 5
-
-    # 構図ズレ
-    if struct < 0.08:
-        score -= 5
-
-    # 意味が弱い
+    # 意味類似度が低い場合のペナルティ（閾値0.65以下で比例的に増加）
     if c < 0.65:
-        score -= 10
+        penalty += (0.65 - c) * 50
 
-    # 難易度
-    if difficulty == "やさしい":
-        score += 8
-    elif difficulty == "きびしい":
-        score -= 8
+    score = base - penalty + 5  # 気持ちよくする補正
 
-    return max(0, min(100, score))
+    # 難易度（固定値のまま、ここは離散的で問題ない）
+    diff_bonus = {"やさしい": 8, "ふつう": 0, "きびしい": -8}
+    score += diff_bonus[difficulty]
+
+    return max(0.0, min(100.0, score))
 
 
 def rank(score):
@@ -173,9 +162,9 @@ if ref and gen:
     st.divider()
 
     st.subheader("🔍 内訳")
-    st.write(f"雰囲気・意味：{c:.2f}")
-    st.write(f"色：{col:.2f}")
-    st.write(f"構図：{struct:.2f}")
+    st.write(f"雰囲気・意味：{c:.3f}")
+    st.write(f"色：{col:.3f}")
+    st.write(f"構図：{struct:.3f}")
 
     st.divider()
 
