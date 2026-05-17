@@ -4,7 +4,7 @@ import open_clip
 import numpy as np
 from PIL import Image
 
-st.set_page_config(page_title="AI 似てる度スコアゲーム", layout="wide")
+st.set_page_config(page_title="AI完全一致無理説", layout="wide")
 
 device = "cpu"  # CloudはCPU前提
 
@@ -129,7 +129,7 @@ def rank(score):
 # =========================
 # UI
 # =========================
-st.title("🎨 AI 似てる度スコアゲーム")
+st.title("🎨 完全一致無理説")
 
 difficulty = st.radio(
     "難易度",
